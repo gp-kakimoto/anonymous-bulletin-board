@@ -197,7 +197,7 @@ const mockCommentsData: SupabaseComment[] = [
     thread_id: 1,
     parent_id: null,
     user_name: "CommentUser4",
-    comment_text: "Second comment on Thread 1 (child)",
+    comment_text: "Third comment on Thread 1 (child)",
     ip_address: "192.168.1.20",
     hierarchy_level: 1,
     is_hidden: false,
@@ -329,75 +329,5 @@ const mockCommentsData: SupabaseComment[] = [
 
 
 ];
-/*
-const mockFetchedComments: CommentData[] = [
-  {
-    id: "c1",
-    parent_id: null,
-    depth: 0,
-    username: "アリス",
-    comment_text: "最初の書き込みだよ！",
-    ip_address: "192.168.1.1",
-    timestamp: "2025-07-10T10:00:00Z",
-    is_hidden: false,
-    thread_id: "c1",
-  },
-  {
-    id: "c2",
-    parent_id: "c1",
-    depth: 1,
-    username: "ボブ",
-    comment_text: "コメントありがとう！",
-    ip_address: "192.168.1.2",
-    timestamp: "2025-07-10T10:05:00Z",
-    is_hidden: false,
-    thread_id: "c1",
-  },
-  {
-    id: "c3",
-    parent_id: null,
-    depth: 0,
-    username: "キャロル",
-    comment_text: "別のスレッドです！",
-    ip_address: "192.168.1.3",
-    timestamp: "2025-07-10T10:10:00Z",
-    is_hidden: false,
-    thread_id: "c3",
-  },
-  {
-    id: "c4",
-    parent_id: "c2",
-    depth: 2,
-    username: "デビット",
-    comment_text: "私もそう思います！",
-    ip_address: "192.168.1.4",
-    timestamp: "2025-07-10T10:15:00Z",
-    is_hidden: true,
-    thread_id: "c1",
-  },
-  {
-    id: "c5",
-    parent_id: "c1",
-    depth: 1,
-    username: "エミリー",
-    comment_text: "この話題は面白いね。",
-    ip_address: "192.168.1.5",
-    timestamp: "2025-07-10T10:08:00Z",
-    is_hidden: false,
-    thread_id: "c1",
-  },
-  {
-    id: "c6",
-    parent_id: "c4",
-    depth: 3,
-    username: "フランク",
-    comment_text: "これは表示されないはずのひ孫コメント",
-    ip_address: "192.168.1.6",
-    timestamp: "2025-07-10T10:20:00Z",
-    is_hidden: false,
-    thread_id: "c1",
-  }, // depthが3なので、本来は投稿できない
-];
-*/
 
 export { mockThreadsData, mockCommentsData };

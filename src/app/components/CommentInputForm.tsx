@@ -1,3 +1,5 @@
+import { validUserName, validContent } from "@/lib/functionsForValidation";
+import { useState } from "react";
 type Props = {
   id?: string; // Optional ID for the comment input form
   threadId: number | null; // Thread ID can be null if not selected
@@ -14,6 +16,17 @@ const CommentInputForm = (props: Props) => {
     handleCommentToggleAtThread,
     handleCommentToggleAtChild,
   } = props;
+
+  const [userName, setUserName] = useState<string | null>("");
+  const [validUserMessage, setValidUserMessage] = useState<string | null>(
+    "ユーザ名は必須です。"
+  );
+
+  const [content, setContent] = useState<string | null>("");
+  const [validContentMessage, setValidContentMessage] = useState<string | null>(
+    "コメントは必須です。"
+  );
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -25,6 +38,11 @@ const CommentInputForm = (props: Props) => {
       parentId
     );
     handleCommentToggleAtThread?.(); // Close the comment input form after submission
+    handleCommentToggleAtChild?.(id ? id : null); // Close the child comment input form if applicable
+  };
+
+  const handleClickCancel = () => {
+    handleCommentToggleAtThread?.(); // Close the comment
     handleCommentToggleAtChild?.(id ? id : null); // Close the child comment input form if applicable
   };
   return (
@@ -41,9 +59,21 @@ const CommentInputForm = (props: Props) => {
         placeholder="Add a comment..."
         className="w-9/10 m-2 p-2 border border-black rounded font-black"
       />
-      <button type="submit" className="m-2 p-2 bg-blue-500 text-white rounded">
-        Submit
-      </button>
+      <div className="flex">
+        <button
+          type="button"
+          className="m-2 p-2 bg-red-500 text-white rounded"
+          onClick={handleClickCancel}
+        >
+          Cansel
+        </button>
+        <button
+          type="submit"
+          className="m-2 p-2 bg-blue-500 text-white rounded"
+        >
+          Submit
+        </button>
+      </div>
     </form>
   );
 };

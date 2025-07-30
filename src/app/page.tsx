@@ -3,24 +3,18 @@
 import React, { useEffect, useState } from "react";
 import MainThreads from "@/app/components/MainThreads";
 import ThreadAndCommentTree from "@/app/components/ThreadAndCommentTree";
-import { Thread } from "@/lib/threads/types";
+import { SupabaseThread, Thread } from "@/lib/threads/types";
 import { mockThreadsData } from "@/app/components/test/testData"; // Mock data for testing
-//import { mock } from "node:test";
-/*
-const structuredComments = buildCommentTree(mockFetchedComments);
-console.log(JSON.stringify(structuredComments, null, 2));
-*/
-//const threads = transformSupabaseData(mockThreadsData, mockCommentsData);
-//console.log(JSON.stringify(threads, null, 2));
+import { getThreadsFromSupabase } from "./utils/supabaseFunctions";
 
 const AnonymousBulletinBoard = () => {
   const [height, setHeight] = useState(0);
   const [mainThreadsIsActive, setMainThreadsIsActive] = useState(true);
   const [threadAndCommentTreeIsActive, setThreadAndCommentTreeIsActive] =
     useState(false);
-
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
-
+  const [threadsData, setThreadsData] = useState<SupabaseThread[] | null>(null);
+  const [threadsIndex, setThreadsIndex] = useState<number>(0);
   useEffect(() => {
     const updateHeight = () => {
       setHeight(window.innerHeight);
@@ -37,6 +31,18 @@ const AnonymousBulletinBoard = () => {
       window.removeEventListener("resize", updateHeight);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchThreads = async () => {
+      const data = await getThreadsFromSupabase(threadsIndex);
+      if (data === null) {
+        console.log("fetchThreads Error");
+        return;
+      }
+      setThreadsData(data);
+    };
+    fetchThreads();
+  }, [threadsIndex]);
 
   return (
     <main
@@ -56,13 +62,17 @@ const AnonymousBulletinBoard = () => {
       <div className="w-full flex justify-center mb-8 mx-auto">
         {mainThreadsIsActive && (
           <MainThreads
-            threads={mockThreadsData}
+            threads={threadsData ? threadsData : mockThreadsData}
             height={height}
             setMainThreadsIsActive={setMainThreadsIsActive}
             setThreadAndCommentTreeIsActive={setThreadAndCommentTreeIsActive}
             setSelectedThread={setSelectedThread}
+            setThreadsIndex={setThreadsIndex}
+            setThreadsData={setThreadsData}
+            threadsIndex={threadsIndex}
           />
         )}
+
         {threadAndCommentTreeIsActive && (
           <ThreadAndCommentTree
             thread={selectedThread} // Assuming we want to show the first thread
