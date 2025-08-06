@@ -1,14 +1,17 @@
 import React from "react";
 import { useState } from "react";
-import { Thread } from "@/lib/threads/types";
+import { Thread, THREADCONTENTLENGTH } from "@/lib/threads/types";
 import { SupabaseThread } from "@/lib/threads/types";
-import { mockCommentsData } from "./test/testData"; // Mock data for testing
+//import { mockCommentsData } from "./test/testData"; // Mock data for testing
 import { transformSupabaseData } from "@/lib/threads/tranformSpabaseData";
 import NavigateRectangleSticky from "./NavigateRectangleSticky";
 import { ThreadInputForm } from "./ThreadInputForm";
-import { getMaxThreadId } from "../utils/supabaseFunctions";
+import {
+  getCommentsFromSupabase,
+  getMaxThreadId,
+} from "../utils/supabaseFunctions";
 type Props = {
-  threads: SupabaseThread[];
+  threads: SupabaseThread[] | null;
   height: number;
   setMainThreadsIsActive: React.Dispatch<React.SetStateAction<boolean>>;
   setThreadAndCommentTreeIsActive: React.Dispatch<
@@ -18,6 +21,7 @@ type Props = {
   setThreadsIndex: React.Dispatch<React.SetStateAction<number>>;
   setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
   threadsIndex: number;
+  setLatestActivityAt: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const MainThreads = (props: Props) => {
@@ -30,12 +34,13 @@ const MainThreads = (props: Props) => {
     setThreadsIndex,
     setThreadsData,
     threadsIndex,
+    setLatestActivityAt,
   } = props;
   const [isSmall, setIsSmall] = useState(false);
   const [isActiveId, setIsActiveId] = useState<number | null>(null);
   const [addNewThreadIsSelected, setAddNewThreadIsSelected] = useState(false);
 
-  const handleClick = (
+  const handleClick = async (
     event: React.MouseEvent<HTMLDivElement>,
     thread: SupabaseThread,
     id: number
@@ -44,9 +49,18 @@ const MainThreads = (props: Props) => {
     setIsActiveId(id);
     const threadId = event.currentTarget.dataset.id;
     console.log("Thread clicked:", threadId);
+    //if (Number(threadId) === id) {
+    const commentsFromSupabase = await getCommentsFromSupabase(
+      Number(threadId)
+    );
+    //      );
+    if (commentsFromSupabase !== null) {
+      setSelectedThread(transformSupabaseData(thread, commentsFromSupabase));
+      setLatestActivityAt(thread.latest_activity_at);
+    }
     setMainThreadsIsActive(false);
     setThreadAndCommentTreeIsActive(true);
-    setSelectedThread(transformSupabaseData(thread, mockCommentsData));
+    //}
   };
 
   const handleClickLeft = () => {
@@ -57,7 +71,11 @@ const MainThreads = (props: Props) => {
   };
   const handClickRight = async () => {
     const maxId = await getMaxThreadId();
-    if (10 * threadsIndex + 10 < (maxId !== null ? maxId : threadsIndex)) {
+    console.log(`maxId in handClickRight=${maxId}`);
+    if (
+      10 * (threadsIndex + 1) <
+      (maxId !== null ? maxId : threadsIndex * 10)
+    ) {
       const tmpThreadsIndex = threadsIndex + 1;
       setThreadsIndex(tmpThreadsIndex);
     }
@@ -79,7 +97,6 @@ const MainThreads = (props: Props) => {
           bgcolor="bg-purple-400"
           width="w-5/5"
           onClick={() => {
-            //setMainThreadsIsActive(false);
             setThreadAndCommentTreeIsActive(false);
             setAddNewThreadIsSelected(true);
           }}
@@ -103,12 +120,13 @@ const MainThreads = (props: Props) => {
           />
         )}
         {!addNewThreadIsSelected &&
+          threads &&
           threads.map(
             (thread) => (
               //thread.is_hidden ? null : ( // Skip hidden threads
               <div
                 className={`bg-white rounded-2xl p-4 mb-4 w-full transition-all duration-300 ${
-                  isActiveId === thread.id && isSmall ? "mt-3 mb-7" : ""
+                  isActiveId === thread.id ? "mt-3 mb-7" : ""
                 }`}
                 key={thread.id}
                 onClick={(e) => handleClick(e, thread, thread.id)}
@@ -118,7 +136,11 @@ const MainThreads = (props: Props) => {
                   <h2 className="text-sm font-semibold text-left text-green-500">
                     {thread.user_name}
                   </h2>
-                  <p className="text-gray-700 text-center">{thread.content}</p>
+                  <p className="text-gray-700 text-center">
+                    {thread.content.length > THREADCONTENTLENGTH
+                      ? thread.content.substring(0, THREADCONTENTLENGTH) + "..."
+                      : thread.content}
+                  </p>
                 </div>
               </div>
             )

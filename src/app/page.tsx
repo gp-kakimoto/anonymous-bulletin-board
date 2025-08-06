@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import MainThreads from "@/app/components/MainThreads";
 import ThreadAndCommentTree from "@/app/components/ThreadAndCommentTree";
 import { SupabaseThread, Thread } from "@/lib/threads/types";
-import { mockThreadsData } from "@/app/components/test/testData"; // Mock data for testing
 import { getThreadsFromSupabase } from "./utils/supabaseFunctions";
 
 const AnonymousBulletinBoard = () => {
@@ -15,34 +14,48 @@ const AnonymousBulletinBoard = () => {
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const [threadsData, setThreadsData] = useState<SupabaseThread[] | null>(null);
   const [threadsIndex, setThreadsIndex] = useState<number>(0);
+  const [latestActivityAt, setLatestActivityAt] = useState<string>("");
+
+  // スレッドデータをインデックスに基づいて再取得する関数
+  const refreshThreads = useCallback(async () => {
+    console.log("Refreshing threads with index:", threadsIndex);
+    const data = await getThreadsFromSupabase(threadsIndex);
+    if (data === null) {
+      console.log("fetchThreads Error");
+      return;
+    }
+    setThreadsData(data);
+  }, [threadsIndex]);
+
+  // ★★★ 一覧に戻る際に呼ばれる最終版の関数 ★★★
+  const handleReturnAndRefresh = async () => {
+    // 1. インデックスを0にリセット
+    if (
+      latestActivityAt !== "" &&
+      selectedThread !== null &&
+      latestActivityAt > selectedThread?.latest_activity_at
+    ) {
+      setThreadsIndex(0);
+    }
+
+    refreshThreads();
+  };
+
   useEffect(() => {
     const updateHeight = () => {
       setHeight(window.innerHeight);
     };
-
-    // 初期ロード時に高さを設定
     updateHeight();
-
-    // リサイズ時に高さを更新
     window.addEventListener("resize", updateHeight);
-
-    // コンポーネントがアンマウントされる際にイベントリスナーを削除
     return () => {
       window.removeEventListener("resize", updateHeight);
     };
   }, []);
 
+  // 初期表示時とページネーション（index変更）時にスレッドを取得
   useEffect(() => {
-    const fetchThreads = async () => {
-      const data = await getThreadsFromSupabase(threadsIndex);
-      if (data === null) {
-        console.log("fetchThreads Error");
-        return;
-      }
-      setThreadsData(data);
-    };
-    fetchThreads();
-  }, [threadsIndex]);
+    refreshThreads();
+  }, [refreshThreads]);
 
   return (
     <main
@@ -62,7 +75,7 @@ const AnonymousBulletinBoard = () => {
       <div className="w-full flex justify-center mb-8 mx-auto">
         {mainThreadsIsActive && (
           <MainThreads
-            threads={threadsData ? threadsData : mockThreadsData}
+            threads={threadsData}
             height={height}
             setMainThreadsIsActive={setMainThreadsIsActive}
             setThreadAndCommentTreeIsActive={setThreadAndCommentTreeIsActive}
@@ -70,15 +83,19 @@ const AnonymousBulletinBoard = () => {
             setThreadsIndex={setThreadsIndex}
             setThreadsData={setThreadsData}
             threadsIndex={threadsIndex}
+            setLatestActivityAt={setLatestActivityAt}
           />
         )}
 
         {threadAndCommentTreeIsActive && (
           <ThreadAndCommentTree
-            thread={selectedThread} // Assuming we want to show the first thread
+            thread={selectedThread}
             height={height}
             setMainThreadsIsActive={setMainThreadsIsActive}
             setThreadAndCommentTreeIsActive={setThreadAndCommentTreeIsActive}
+            setSelectedThread={setSelectedThread}
+            onReturn={handleReturnAndRefresh}
+            setLatestActivityAt={setLatestActivityAt}
           />
         )}
       </div>

@@ -75,6 +75,7 @@ export type Database = {
           id: number
           ip_address: unknown
           is_hidden: boolean
+          latest_activity_at: string
           updated_at: string
           user_name: string
         }
@@ -84,6 +85,7 @@ export type Database = {
           id?: number
           ip_address: unknown
           is_hidden?: boolean
+          latest_activity_at?: string
           updated_at?: string
           user_name: string
         }
@@ -93,6 +95,7 @@ export type Database = {
           id?: number
           ip_address?: unknown
           is_hidden?: boolean
+          latest_activity_at?: string
           updated_at?: string
           user_name?: string
         }

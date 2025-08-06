@@ -12,3 +12,4 @@ type Comment = SupabaseComment & { replies: Comment[] };
 export type { Thread, Comment,SupabaseThread,SupabaseComment };
 export const MAXHIERARCHYLEVEL = 2; // Maximum hierarchy level for comments コメントの階層の深さを決定する変数
 // You can adjust this value to control how deep the comment nesting can go.
+export const THREADCONTENTLENGTH = 25;

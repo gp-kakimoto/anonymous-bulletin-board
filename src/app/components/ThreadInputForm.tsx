@@ -4,6 +4,7 @@ import { validUserName, validContent } from "@/lib/functionsForValidation";
 import { getThreadsFromSupabase } from "../utils/supabaseFunctions"; // この行を追記
 //import { useRouter } from "next/navigation";
 import { SupabaseThread } from "@/lib/threads/types";
+import InputForm from "./InputForm";
 type Props = {
   threadsIndex: number;
   setThreadsIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -26,10 +27,10 @@ const ThreadInputForm = (props: Props) => {
     "コメントは必須です。"
   );
   //const router = useRouter();
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-    const response = await postThread(new FormData(event.currentTarget));
+    const response = await postThread(new FormData(e.currentTarget));
 
     if (response?.error) {
       console.error(response.error);
@@ -59,7 +60,30 @@ const ThreadInputForm = (props: Props) => {
     setValidContentMessage(validContent(e.target.value));
   };
 
+  const handleClickCancel = () => {
+    setAddNewThreadIsSelected(false);
+  };
   return (
+    <InputForm
+      userName={userName}
+      content={content}
+      validUserNameMessage={validUserNameMessage}
+      validContentMessage={validContentMessage}
+      handleClickCancel={() => {
+        handleClickCancel();
+      }}
+      handleInputChange={(e) => {
+        handleInputChange(e);
+      }}
+      handleTextAreaChange={(e) => {
+        handleTextAreaChange(e);
+      }}
+      handleSubmit={(e) => {
+        handleSubmit(e);
+      }}
+    />
+
+    /*
     <form
       onSubmit={handleSubmit}
       className="w-full flex flex-col items-center p-4 m-2 bg-gray-100 rounded-lg shadow-md"
@@ -118,6 +142,7 @@ const ThreadInputForm = (props: Props) => {
         </button>
       </div>
     </form>
+    */
   );
 };
 

@@ -1,4 +1,4 @@
-import { Comment } from "@/lib/threads/types";
+import { Comment, Thread } from "@/lib/threads/types";
 import { MAXHIERARCHYLEVEL } from "@/lib/threads/types";
 import CommentInputForm from "./CommentInputForm";
 /**
@@ -14,18 +14,24 @@ import CommentInputForm from "./CommentInputForm";
  **/
 type Props = {
   comment: Comment | null; // Comment object to display
+  thread: Thread; //
+  setSelectedThread: React.Dispatch<React.SetStateAction<Thread | null>>;
   setIsCommentingAtThread: React.Dispatch<React.SetStateAction<boolean>>;
   isCommentingChildId: string | null;
   setIsCommentingChildId: (id: string | null) => void;
   handleCommentToggleAtChild: (id: string | null) => void;
+  setLatestActivityAt: React.Dispatch<React.SetStateAction<string>>;
 };
 const CommentTree = (props: Props) => {
   const {
     comment,
+    thread,
+    setSelectedThread,
     setIsCommentingAtThread,
     isCommentingChildId,
     setIsCommentingChildId,
     handleCommentToggleAtChild,
+    setLatestActivityAt,
   } = props;
 
   const handleClick = (id: string | null) => {
@@ -63,10 +69,14 @@ const CommentTree = (props: Props) => {
                   <CommentInputForm
                     id={reply.id}
                     threadId={reply.thread_id}
+                    thread={thread}
+                    setSelectedThread={setSelectedThread}
                     parentId={comment.id}
                     handleCommentToggleAtChild={() =>
                       handleCommentToggleAtChild(reply.id)
                     }
+                    hierarchyLevel={reply.hierarchy_level + 1}
+                    setLatestActivityAt={setLatestActivityAt}
                   />
                 )}
               {/* 
@@ -80,12 +90,15 @@ const CommentTree = (props: Props) => {
                 reply.hierarchy_level <= MAXHIERARCHYLEVEL && (
                   <CommentTree
                     comment={reply}
+                    thread={thread}
+                    setSelectedThread={setSelectedThread}
                     setIsCommentingAtThread={setIsCommentingAtThread}
                     isCommentingChildId={isCommentingChildId}
                     setIsCommentingChildId={setIsCommentingChildId}
                     handleCommentToggleAtChild={() =>
                       handleCommentToggleAtChild(isCommentingChildId)
                     }
+                    setLatestActivityAt={setLatestActivityAt}
                   />
                 )}
             </div>
