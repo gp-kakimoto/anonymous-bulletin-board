@@ -1,20 +1,15 @@
 import { validUserName, validContent } from "@/lib/functionsForValidation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import InputForm from "./InputForm";
 import { postComment } from "../actions";
-import { getCommentsFromSupabase } from "../utils/supabaseFunctions";
-import { transformSupabaseData } from "@/lib/threads/tranformSpabaseData";
-import { Thread } from "@/lib/threads/types";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 type Props = {
   id?: string; // Optional ID for the comment input form
   threadId: number | null; // Thread ID can be null if not selected
   parentId?: string | null; // Optional parent ID for nested comments
   hierarchyLevel: number;
-  thread: Thread;
   handleCommentToggleAtThread?: () => void; // Function to toggle comment input visibility
   handleCommentToggleAtChild?: (commentId?: string | null) => void; // Function to toggle child comment input visibility
-  setSelectedThread: React.Dispatch<React.SetStateAction<Thread | null>>;
   setLatestActivityAt: React.Dispatch<React.SetStateAction<string>>;
 };
 
@@ -24,13 +19,11 @@ const CommentInputForm = (props: Props) => {
     threadId,
     parentId,
     hierarchyLevel,
-    thread,
     handleCommentToggleAtThread,
     handleCommentToggleAtChild,
-    setSelectedThread,
     setLatestActivityAt,
   } = props;
-  //const router = useRouter();
+  const router = useRouter();
   const [userName, setUserName] = useState<string | null>("");
   const [validUserNameMessage, setValidUserNameMessage] = useState<
     string | null
@@ -40,10 +33,6 @@ const CommentInputForm = (props: Props) => {
   const [validContentMessage, setValidContentMessage] = useState<string | null>(
     "コメントは必須です。"
   );
-
-  useEffect(() => {
-    setLatestActivityAt(thread.latest_activity_at);
-  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,14 +56,6 @@ const CommentInputForm = (props: Props) => {
         "with parent ID:",
         parentId
       );
-
-      const commentsFromSupabase = await getCommentsFromSupabase(
-        Number(threadId)
-      );
-      //      );
-      if (commentsFromSupabase !== null) {
-        setSelectedThread(transformSupabaseData(thread, commentsFromSupabase));
-      }
       if (response !== null && response?.data) {
         setLatestActivityAt(response?.data[0].created_at);
       }
@@ -84,7 +65,7 @@ const CommentInputForm = (props: Props) => {
       setValidContentMessage("コメントは必須です。");
       handleCommentToggleAtThread?.(); // Close the comment input form after submission
       handleCommentToggleAtChild?.(id ? id : null); // Close the child comment input form if applicable
-      // router.refresh();
+      router.push(`/thread/${threadId}`); // Navigate to the thread page after submission
     }
   };
 

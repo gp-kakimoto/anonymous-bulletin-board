@@ -3,35 +3,26 @@ import NavigateRectangleSticky from "./NavigateRectangleSticky";
 import { useState } from "react";
 import CommentInputForm from "./CommentInputForm";
 import CommentTree from "./CommentTree";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type Props = {
   thread: Thread | null; // Thread can be null if not selected;
   height: number;
-  setMainThreadsIsActive: React.Dispatch<React.SetStateAction<boolean>>;
-  setThreadAndCommentTreeIsActive: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
-  setSelectedThread: React.Dispatch<React.SetStateAction<Thread | null>>;
-  onReturn: () => void;
-  setLatestActivityAt: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const ThreadAndCommentTree = (props: Props) => {
-  const {
-    thread,
-    height,
-    setMainThreadsIsActive,
-    setThreadAndCommentTreeIsActive,
-    setSelectedThread,
-    onReturn,
-    setLatestActivityAt,
-  } = props;
+  const router = useRouter();
 
+  const { thread, height } = props;
+
+  const [latestActivityAt, setLatestActivityAt] = useState<string>("");
   const handleReturnToThreads = () => {
-    onReturn();
-    setThreadAndCommentTreeIsActive(false);
-    setMainThreadsIsActive(true);
+    if (thread !== null && latestActivityAt !== "") {
+      setLatestActivityAt("");
+      router.push(`/1`); // Refresh the page to get the latest threads
+    } else {
+      router.back();
+    }
   };
 
   const [isCommentingAtThread, setIsCommentingAtThread] = useState(false);
@@ -81,8 +72,6 @@ const ThreadAndCommentTree = (props: Props) => {
           {isCommentingAtThread && thread && (
             <CommentInputForm
               threadId={thread ? thread.id : null}
-              thread={thread}
-              setSelectedThread={setSelectedThread}
               handleCommentToggleAtThread={handleCommentToggleAtThread}
               hierarchyLevel={1}
               setLatestActivityAt={setLatestActivityAt}
@@ -111,8 +100,6 @@ const ThreadAndCommentTree = (props: Props) => {
                         <CommentInputForm
                           id={comment.id}
                           threadId={thread?.id}
-                          thread={thread}
-                          setSelectedThread={setSelectedThread}
                           parentId={comment.id}
                           handleCommentToggleAtChild={() =>
                             handleCommentToggleAtChild(comment.id)
@@ -125,8 +112,6 @@ const ThreadAndCommentTree = (props: Props) => {
                         <div className="ml-4 bg-white mb-0.5">
                           <CommentTree
                             comment={comment}
-                            thread={thread}
-                            setSelectedThread={setSelectedThread}
                             setIsCommentingAtThread={setIsCommentingAtThread}
                             isCommentingChildId={isCommentingChildId}
                             setIsCommentingChildId={setIsCommentingChildId}

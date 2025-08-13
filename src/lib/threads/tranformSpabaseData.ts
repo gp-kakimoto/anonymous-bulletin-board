@@ -2,7 +2,7 @@ import type { Thread } from "@/lib/threads/types";
 import type { Comment } from "@/lib/threads/types";
 import type { SupabaseThread } from "@/lib/threads/types";
 import type { SupabaseComment } from "@/lib/threads/types";
-import { MAXHIERARCHYLEVEL } from "@/lib/threads/types";
+import { MAX_HIERARCHY_LEVEL } from "@/lib/threads/types";
 /**
  * Transforms flat thread and comment data into a hierarchical list structure.
  *
@@ -45,7 +45,7 @@ function transformSupabaseData(
       if (parentThread) {
         parentThread.comments?.push(comment);
       }
-    } else if (comment.hierarchy_level !== null  && comment.hierarchy_level <= MAXHIERARCHYLEVEL && comment.parent_id) {
+    } else if (comment.hierarchy_level !== null  && comment.hierarchy_level <= MAX_HIERARCHY_LEVEL && comment.parent_id) {
       // This is a grandchild comment
       const parentComment = commentsMap.get(comment.parent_id);
       if (parentComment && parentComment.replies) {

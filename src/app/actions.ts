@@ -8,7 +8,7 @@ import DOMPurify from "isomorphic-dompurify";
 // commentへの書き込み機能も実装してある。動く。
 // もう少しコードを圧縮できると思う 検討中
 
-import { MAXHIERARCHYLEVEL } from "@/lib/threads/types";
+import { MAX_HIERARCHY_LEVEL } from "@/lib/threads/types";
 
 interface PostCommentPayload {
   userName: string;
@@ -87,7 +87,7 @@ const validateCommentInput = (data: FormData,threadId:number|null,parentId:strin
 
   if (
     isNaN(/*parsedHierarchyLevel*/ hierarchyLevel) ||
-    (parentId && hierarchyLevel /*parsedHierarchyLevel*/ > MAXHIERARCHYLEVEL) ||
+    (parentId && hierarchyLevel /*parsedHierarchyLevel*/ > MAX_HIERARCHY_LEVEL) ||
     (!parentId && hierarchyLevel /*parsedHierarchyLevel*/ !== 1)
   ) {
     throw new Error("階層レベルが不正です。");

@@ -1,45 +1,24 @@
 import React from "react";
 import { useState } from "react";
-import { Thread, THREADCONTENTLENGTH } from "@/lib/threads/types";
+import { THREAD_CONTENT_LENGTH } from "@/lib/threads/types";
 import { SupabaseThread } from "@/lib/threads/types";
 //import { mockCommentsData } from "./test/testData"; // Mock data for testing
-import { transformSupabaseData } from "@/lib/threads/tranformSpabaseData";
 import NavigateRectangleSticky from "./NavigateRectangleSticky";
 import { ThreadInputForm } from "./ThreadInputForm";
-import {
-  getCommentsFromSupabase,
-  getMaxThreadId,
-} from "../utils/supabaseFunctions";
+import { getMaxThreadId } from "../utils/supabaseFunctions";
+import { useRouter } from "next/navigation";
 type Props = {
   threads: SupabaseThread[] | null;
-  height: number;
-  setMainThreadsIsActive: React.Dispatch<React.SetStateAction<boolean>>;
-  setThreadAndCommentTreeIsActive: React.Dispatch<
-    React.SetStateAction<boolean>
-  >;
-  setSelectedThread: React.Dispatch<React.SetStateAction<Thread | null>>;
-  setThreadsIndex: React.Dispatch<React.SetStateAction<number>>;
   setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
   threadsIndex: number;
-  setLatestActivityAt: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const MainThreads = (props: Props) => {
-  const {
-    threads,
-    height,
-    setMainThreadsIsActive,
-    setThreadAndCommentTreeIsActive,
-    setSelectedThread,
-    setThreadsIndex,
-    setThreadsData,
-    threadsIndex,
-    setLatestActivityAt,
-  } = props;
+  const { threads, setThreadsData, threadsIndex } = props;
   const [isSmall, setIsSmall] = useState(false);
   const [isActiveId, setIsActiveId] = useState<number | null>(null);
   const [addNewThreadIsSelected, setAddNewThreadIsSelected] = useState(false);
-
+  const router = useRouter();
   const handleClick = async (
     event: React.MouseEvent<HTMLDivElement>,
     thread: SupabaseThread,
@@ -49,44 +28,34 @@ const MainThreads = (props: Props) => {
     setIsActiveId(id);
     const threadId = event.currentTarget.dataset.id;
     console.log("Thread clicked:", threadId);
-    //if (Number(threadId) === id) {
-    const commentsFromSupabase = await getCommentsFromSupabase(
-      Number(threadId)
-    );
-    //      );
-    if (commentsFromSupabase !== null) {
-      setSelectedThread(transformSupabaseData(thread, commentsFromSupabase));
-      setLatestActivityAt(thread.latest_activity_at);
-    }
-    setMainThreadsIsActive(false);
-    setThreadAndCommentTreeIsActive(true);
-    //}
+    router.push(`/thread/${threadId}`);
   };
 
+  // /n のとき n-1 を threadsIndex　としている
+  // threadsIndexが0のときは /1 に遷移する
+  // index = threadsIndex +1 -1は
+  // index = n-1となり、/n-1に遷移する
   const handleClickLeft = () => {
     if (threadsIndex > 0) {
-      const tmpIndex = threadsIndex - 1;
-      setThreadsIndex(tmpIndex);
+      const index = threadsIndex + 1 - 1;
+      router.push(`/${index}`);
     }
   };
   const handClickRight = async () => {
     const maxId = await getMaxThreadId();
     console.log(`maxId in handClickRight=${maxId}`);
     if (
-      10 * (threadsIndex + 1) <
+      10 * (threadsIndex + 1) + 1 <=
       (maxId !== null ? maxId : threadsIndex * 10)
     ) {
-      const tmpThreadsIndex = threadsIndex + 1;
-      setThreadsIndex(tmpThreadsIndex);
+      const index = threadsIndex + 1 + 1;
+      router.push(`/${index}`);
     }
   };
 
-  // Transform the flat data into a hierarchical structure
-  //const transformedThreads = transformSupabaseData(threads, comments);
-
   return (
     <div
-      style={{ height: `${(height * 4) / 5}px` }}
+      style={{ height: `calc((100vh * 4) / 5)` }}
       className="flex justify-center w-5/5 overflow-auto"
     >
       <div className="sticky top-0 flex flex-col w-2/10 h-full mr-1 ml-1">
@@ -97,7 +66,6 @@ const MainThreads = (props: Props) => {
           bgcolor="bg-purple-400"
           width="w-5/5"
           onClick={() => {
-            setThreadAndCommentTreeIsActive(false);
             setAddNewThreadIsSelected(true);
           }}
         />
@@ -113,8 +81,6 @@ const MainThreads = (props: Props) => {
       <div className="w-6/10 ml-0  h-fit  flex justify-center flex-col items-center mx-0 px-0">
         {addNewThreadIsSelected && (
           <ThreadInputForm
-            threadsIndex={threadsIndex}
-            setThreadsIndex={setThreadsIndex}
             setAddNewThreadIsSelected={setAddNewThreadIsSelected}
             setThreadsData={setThreadsData} // この行を追記
           />
@@ -137,8 +103,9 @@ const MainThreads = (props: Props) => {
                     {thread.user_name}
                   </h2>
                   <p className="text-gray-700 text-center">
-                    {thread.content.length > THREADCONTENTLENGTH
-                      ? thread.content.substring(0, THREADCONTENTLENGTH) + "..."
+                    {thread.content.length > THREAD_CONTENT_LENGTH
+                      ? thread.content.substring(0, THREAD_CONTENT_LENGTH) +
+                        "..."
                       : thread.content}
                   </p>
                 </div>

@@ -18,6 +18,21 @@ const getMaxThreadId = async (): Promise<number | null> => {
   return count;
 };
 
+const getThreadFromSupabase = async (threadId:number) =>{
+  const supabase = createSupabaseBrowserClient();
+  
+  const { data, error } = await supabase
+    .from('threads')
+    .select('*')
+    .eq('id', threadId)
+    .single(); // 単一のスレッドを取得
+
+  if (error) {
+    console.error('スレッドデータ取得に失敗しました:', error);
+    return null;
+  }
+  return data;
+}
 
 const getThreadsFromSupabase = async (threadsIndex:number
 )=>{
@@ -62,4 +77,4 @@ const supabase = createSupabaseBrowserClient();
 };
 
 
-export { getMaxThreadId,getThreadsFromSupabase,getCommentsFromSupabase};
+export { getMaxThreadId,getThreadsFromSupabase,getCommentsFromSupabase,getThreadFromSupabase};

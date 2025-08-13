@@ -1,5 +1,5 @@
-import { Comment, Thread } from "@/lib/threads/types";
-import { MAXHIERARCHYLEVEL } from "@/lib/threads/types";
+import { Comment } from "@/lib/threads/types";
+import { MAX_HIERARCHY_LEVEL } from "@/lib/threads/types";
 import CommentInputForm from "./CommentInputForm";
 /**
  * CommentTree component displays a comment and its replies in a tree structure.
@@ -8,14 +8,12 @@ import CommentInputForm from "./CommentInputForm";
  * このコンポーネントは再帰的な実装が行われています。
  * This component has a recursive implementation.
  * Iterating version of this component is under construction.
- * MAXHIERARCHYLEVEL is used to control the maximum depth of comment nesting.
- * MAXHIERARCHYLEVELはコメントのネストの最大深度を制御するために使用されます。
+ * MAX_HIERARCHY_LEVEL is used to control the maximum depth of comment nesting.
+ * MAX_HIERARCHY_LEVELはコメントのネストの最大深度を制御するために使用されます。
  * You can adjust this value to control how deep the comment nesting goes.
  **/
 type Props = {
   comment: Comment | null; // Comment object to display
-  thread: Thread; //
-  setSelectedThread: React.Dispatch<React.SetStateAction<Thread | null>>;
   setIsCommentingAtThread: React.Dispatch<React.SetStateAction<boolean>>;
   isCommentingChildId: string | null;
   setIsCommentingChildId: (id: string | null) => void;
@@ -25,8 +23,6 @@ type Props = {
 const CommentTree = (props: Props) => {
   const {
     comment,
-    thread,
-    setSelectedThread,
     setIsCommentingAtThread,
     isCommentingChildId,
     setIsCommentingChildId,
@@ -64,13 +60,11 @@ const CommentTree = (props: Props) => {
               </div>
               {/* Render comment input form for replying to this comment */}
               {reply.hierarchy_level !== null &&
-                reply.hierarchy_level < MAXHIERARCHYLEVEL &&
+                reply.hierarchy_level < MAX_HIERARCHY_LEVEL &&
                 isCommentingChildId === reply.id && (
                   <CommentInputForm
                     id={reply.id}
                     threadId={reply.thread_id}
-                    thread={thread}
-                    setSelectedThread={setSelectedThread}
                     parentId={comment.id}
                     handleCommentToggleAtChild={() =>
                       handleCommentToggleAtChild(reply.id)
@@ -82,16 +76,14 @@ const CommentTree = (props: Props) => {
               {/* 
                 Render nested comments if they exist
                 you can control max hierarchy level by editing 
-                MAXHIERARCHYLEVEL at src/lib/threads/types.ts
+                MAX_HIERARCHY_LEVEL at src/lib/threads/types.ts
             */}
 
               {reply.replies?.length !== null &&
                 reply.hierarchy_level !== null &&
-                reply.hierarchy_level <= MAXHIERARCHYLEVEL && (
+                reply.hierarchy_level <= MAX_HIERARCHY_LEVEL && (
                   <CommentTree
                     comment={reply}
-                    thread={thread}
-                    setSelectedThread={setSelectedThread}
                     setIsCommentingAtThread={setIsCommentingAtThread}
                     isCommentingChildId={isCommentingChildId}
                     setIsCommentingChildId={setIsCommentingChildId}
