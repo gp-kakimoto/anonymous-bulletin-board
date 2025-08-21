@@ -1,9 +1,9 @@
 'use client';
 
 import { createSupabaseBrowserClient } from '@/../../utils/supabase/client'; // 適切なパスに修正
+import { THREADS_PER_PAGE } from '@/lib/threads/types';
 
-
-const getMaxThreadId = async (): Promise<number | null> => {
+const getThreadCount = async (): Promise<number | null> => {
   const supabase = createSupabaseBrowserClient();
 
   const { count, error } = await supabase
@@ -12,7 +12,7 @@ const getMaxThreadId = async (): Promise<number | null> => {
   // countを取得するためのクエリ
 
   if (error) {
-    console.error('IDの最大値の取得に失敗しました:', error);
+    console.error('IDの総数の取得に失敗しました:', error);
     return null;
   }
   return count;
@@ -42,8 +42,7 @@ const supabase = createSupabaseBrowserClient();
     .from('threads')
     .select('*')
     .order('latest_activity_at', { ascending: false }) // latest_activity_atを降順にソート
-    .range(0+threadsIndex*10,threadsIndex*10+9);
-    
+    .range(0+threadsIndex*THREADS_PER_PAGE,threadsIndex*THREADS_PER_PAGE+9);
     
     
     if (error) {
@@ -77,4 +76,4 @@ const supabase = createSupabaseBrowserClient();
 };
 
 
-export { getMaxThreadId,getThreadsFromSupabase,getCommentsFromSupabase,getThreadFromSupabase};
+export { getThreadCount,getThreadsFromSupabase,getCommentsFromSupabase,getThreadFromSupabase};
