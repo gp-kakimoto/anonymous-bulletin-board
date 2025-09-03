@@ -34,12 +34,15 @@ const Page = () => {
   }, [params, setTransformedData]);
 
   return (
-    <div>
+    <main className="flex  flex-col items-centerjustify-center  mx-auto ">
+      <h1 className="text-4xl font-bold  mt-0 mb-5 w-full z-100 text-center">
+        Anonymous Bulletin Board
+      </h1>
       <ThreadAndCommentTree
         thread={transformedData}
-        height={window.innerHeight}
+        // height={window.innerHeight}
       />
-    </div>
+    </main>
   );
 };
 

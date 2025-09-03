@@ -42,7 +42,7 @@ const supabase = createSupabaseBrowserClient();
     .from('threads')
     .select('*')
     .order('latest_activity_at', { ascending: false }) // latest_activity_atを降順にソート
-    .range(0+threadsIndex*THREADS_PER_PAGE,threadsIndex*THREADS_PER_PAGE+9);
+    .range(0+threadsIndex*THREADS_PER_PAGE,(threadsIndex+1)*THREADS_PER_PAGE-1);
     
     
     if (error) {

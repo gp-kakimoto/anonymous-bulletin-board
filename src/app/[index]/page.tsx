@@ -27,27 +27,16 @@ const Page = () => {
   }, [refreshThreads]);
 
   return (
-    <main
-      style={{
-        height: "100vh",
-      }}
-      className="flex  flex-col items-center justify-between  p-24 mx-auto "
-    >
-      <h1
-        style={{
-          height: `calc(100vh * (1 / 5))`,
-        }}
-        className="text-4xl font-bold mb-20 mx-auto mt-0  w-5/5 z-100"
-      >
+    <main className="flex  flex-col items-centerjustify-center  mx-auto ">
+      <h1 className="text-4xl font-bold mt-0 mb-5 w-full z-100 text-center">
         Anonymous Bulletin Board
       </h1>
-      <div className="w-full flex justify-center mb-8 mx-auto">
-        <MainThreads
-          threads={threadsData}
-          setThreadsData={setThreadsData}
-          threadsIndex={threadsIndex}
-        />
-      </div>
+
+      <MainThreads
+        threads={threadsData}
+        setThreadsData={setThreadsData}
+        threadsIndex={threadsIndex}
+      />
     </main>
   );
 };

@@ -7,13 +7,13 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   thread: Thread | null; // Thread can be null if not selected;
-  height: number;
+  //height: number;
 };
 
 const ThreadAndCommentTree = (props: Props) => {
   const router = useRouter();
 
-  const { thread, height } = props;
+  const { thread } = props;
 
   const [latestActivityAt, setLatestActivityAt] = useState<string>("");
   const handleReturnToThreads = () => {
@@ -41,21 +41,20 @@ const ThreadAndCommentTree = (props: Props) => {
   };
 
   return (
-    <div
-      style={{ height: `${(height * 4) / 5}px` }}
-      className="flex justify-center w-full overflow-auto"
-    >
-      <NavigateRectangleSticky
-        navigateTitle="return to threads"
-        justifyStyle="justify-end"
-        itemsStyle="items-center"
-        bgcolor="bg-purple-800"
-        onClick={() => {
-          handleReturnToThreads();
-        }}
-      />
-
-      <div className="w-6/10 ml-1/10 h-fit flex justify-center flex-col items-center mr-0 px-0">
+    <div className="flex justify-center w-full  m-0 p-0">
+      <div className="sticky top-0 flex flex-col  h-full mr-1 ml-1">
+        <NavigateRectangleSticky
+          navigateTitle="return to threads"
+          justifyStyle="justify-end"
+          itemsStyle="items-center"
+          bgcolor="bg-purple-800"
+          width="w-full"
+          onClick={() => {
+            handleReturnToThreads();
+          }}
+        />
+      </div>
+      <div className=" w-6/10 h-fit flex  flex-col items-center  mt-0 mx-0 pt-0 px-0">
         <div className="bg-white rounded-2xl p-4 mb-4 w-full">
           <h2 className="text-sm font-semibold text-left text-green-500 bg-amber-100 rounded-b-lg p-2">
             {thread?.user_name}
@@ -131,9 +130,6 @@ const ThreadAndCommentTree = (props: Props) => {
           )}
           {/* Render comments here if needed */}
         </div>
-      </div>
-      <div className="sticky top-9/10  w-1/10  h-fit flex col items-baseline-last justify-end ml-1 mb-0">
-        {/* This is dummy div area for centering threads container */}
       </div>
     </div>
   );
