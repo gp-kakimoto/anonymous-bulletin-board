@@ -6,7 +6,8 @@ import { SupabaseThread } from "@/lib/threads/types";
 import InputForm from "./InputForm";
 import { useRouter } from "next/navigation";
 type Props = {
-  setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
+  //setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
+  setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[]>>;
   setAddNewThreadIsSelected: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const ThreadInputForm = (props: Props) => {

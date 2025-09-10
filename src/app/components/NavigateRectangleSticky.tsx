@@ -9,11 +9,12 @@ type Props = {
 const NavigateRectangleSticky = (props: Props) => {
   const { navigateTitle, justifyStyle, itemsStyle, bgcolor, width, onClick } =
     props;
+
   return (
     <div
       className={`sticky top-0 ${
         width ? width : "w-2/10"
-      } flex h-fit mr-1 pr-0 ${justifyStyle} ${itemsStyle} z-10`}
+      } flex  mr-1 pr-0 ${justifyStyle} ${itemsStyle} z-10`}
       onClick={onClick}
     >
       <div className="flex items-start justify-center m-0 p-0">

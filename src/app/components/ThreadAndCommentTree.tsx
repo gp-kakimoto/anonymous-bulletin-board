@@ -42,7 +42,7 @@ const ThreadAndCommentTree = (props: Props) => {
 
   return (
     <div className="flex justify-center w-full  m-0 p-0">
-      <div className="sticky top-0 flex flex-col  h-full mr-1 ml-1">
+      <div className="sticky top-0 flex flex-col mr-1 ml-1">
         <NavigateRectangleSticky
           navigateTitle="return to threads"
           justifyStyle="justify-end"
@@ -54,7 +54,7 @@ const ThreadAndCommentTree = (props: Props) => {
           }}
         />
       </div>
-      <div className=" w-6/10 h-fit flex  flex-col items-center  mt-0 mx-0 pt-0 px-0">
+      <div className=" w-6/10  flex  flex-col items-center  mt-0 mx-0 pt-0 px-0">
         <div className="bg-white rounded-2xl p-4 mb-4 w-full">
           <h2 className="text-sm font-semibold text-left text-green-500 bg-amber-100 rounded-b-lg p-2">
             {thread?.user_name}

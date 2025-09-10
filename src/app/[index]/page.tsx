@@ -8,8 +8,10 @@ import { useParams } from "next/navigation";
 
 const Page = () => {
   const params = useParams();
-  const [threadsData, setThreadsData] = useState<SupabaseThread[] | null>(null);
-  const threadsIndex = Number(params.index) - 1 || 0; // Default to 0 if not provided
+  // const [threadsData, setThreadsData] = useState<SupabaseThread[] |null>(null);
+  const [threadsData, setThreadsData] = useState<SupabaseThread[]>([]);
+
+  const threadsIndex = Number(params.index) || 1; // Default to 1 if not provided
   // スレッドデータをインデックスに基づいて再取得する関数
   const refreshThreads = useCallback(async () => {
     console.log("Refreshing threads with index:", threadsIndex);
