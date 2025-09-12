@@ -1,11 +1,9 @@
 type Props = {
-  //styles: React.CSSProperties;
   onClickRight: () => void;
   onClickLeft: () => void;
 };
 const PageButton = (props: Props) => {
   const { onClickRight, onClickLeft } = props;
-  //const pageStyles = Object.values(styles).join(" ");
   return (
     <div className={`flex justify-between `}>
       <div className="flex  items-baseline-last" onClick={onClickLeft}>

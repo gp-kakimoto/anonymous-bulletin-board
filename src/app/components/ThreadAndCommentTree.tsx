@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   thread: Thread | null; // Thread can be null if not selected;
-  //height: number;
 };
 
 const ThreadAndCommentTree = (props: Props) => {

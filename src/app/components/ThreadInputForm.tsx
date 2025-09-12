@@ -6,7 +6,6 @@ import { SupabaseThread } from "@/lib/threads/types";
 import InputForm from "./InputForm";
 import { useRouter } from "next/navigation";
 type Props = {
-  //setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
   setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[]>>;
   setAddNewThreadIsSelected: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -32,10 +31,12 @@ const ThreadInputForm = (props: Props) => {
     } else {
       // Success case
       setAddNewThreadIsSelected(false);
-      const updatedThreads = await getThreadsFromSupabase(0);
+
+      const updatedThreads = await getThreadsFromSupabase(1);
       if (updatedThreads) {
         setThreadsData(updatedThreads);
       }
+
       setUserName("");
       setContent("");
       setValidUserNameMessage("ユーザ名は必須です。");

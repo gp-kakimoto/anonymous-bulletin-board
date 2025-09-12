@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 
 const Page = () => {
   const params = useParams();
-  // const [threadsData, setThreadsData] = useState<SupabaseThread[] |null>(null);
   const [threadsData, setThreadsData] = useState<SupabaseThread[]>([]);
 
   const threadsIndex = Number(params.index) || 1; // Default to 1 if not provided

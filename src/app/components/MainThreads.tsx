@@ -9,9 +9,7 @@ import { getThreadCount } from "../utils/supabaseFunctions";
 import { useRouter } from "next/navigation";
 import PageButton from "./PageButton";
 type Props = {
-  //threads: SupabaseThread[] | null;
   threads: SupabaseThread[];
-  //setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[] | null>>;
   setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[]>>;
   threadsIndex: number;
 };
