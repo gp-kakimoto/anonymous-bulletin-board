@@ -1,3 +1,4 @@
+//"use client";
 import React from "react";
 import { useState } from "react";
 import { THREADS_PER_PAGE, THREAD_CONTENT_LENGTH } from "@/lib/threads/types";

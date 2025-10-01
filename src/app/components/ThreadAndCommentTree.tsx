@@ -1,3 +1,4 @@
+"use client";
 import { Thread } from "@/lib/threads/types";
 import NavigateRectangleSticky from "./NavigateRectangleSticky";
 import { useState } from "react";
