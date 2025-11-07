@@ -1,47 +1,36 @@
-"use client";
 import {
   getCommentsFromSupabase,
   getThreadFromSupabase,
-} from "@/app/utils/supabaseFunctions";
-import { transformSupabaseData } from "@/lib/threads/tranformSpabaseData";
-import { useEffect, useState } from "react";
+} from "@/app/utils/supabaseServerFunctions";
+
+import { transformSupabaseData } from "@/lib/threads/transformSupabaseData";
 import { Thread } from "@/lib/threads/types";
-import { useParams } from "next/navigation";
 import ThreadAndCommentTree from "@/app/components/ThreadAndCommentTree";
 
 const getAndTransformComments = async (
-  threadId: number,
-  setTransformedData: React.Dispatch<React.SetStateAction<Thread | null>>
-) => {
-  // Assuming you want to get the first page of threads
-  const threadFromSupabae = await getThreadFromSupabase(threadId);
-  const commentsFromSupabase = await getCommentsFromSupabase(Number(threadId));
+  threadId: number
+): Promise<Thread | null> => {
+  const threadFromSupabase = await getThreadFromSupabase(threadId);
+  const commentsFromSupabase = await getCommentsFromSupabase(threadId);
 
-  if (commentsFromSupabase && threadFromSupabae) {
-    setTransformedData(
-      transformSupabaseData(threadFromSupabae, commentsFromSupabase)
-    );
+  if (commentsFromSupabase && threadFromSupabase) {
+    return transformSupabaseData(threadFromSupabase, commentsFromSupabase);
   }
+  return null;
 };
-const Page = () => {
-  const params = useParams();
-  const [transformedData, setTransformedData] = useState<Thread | null>(null);
 
-  useEffect(() => {
-    const { id } = params;
-    const threadId = parseInt(id as string, 10);
-    getAndTransformComments(threadId, setTransformedData);
-  }, [params, setTransformedData]);
+type Params = { id: string };
+const Page = async ({ params }: { params: Params }) => {
+  const { id } = params;
+  const threadId = parseInt(id, 10);
+  const transformedData = await getAndTransformComments(threadId);
 
   return (
-    <main className="flex  flex-col items-centerjustify-center  mx-auto ">
-      <h1 className="text-4xl font-bold  mt-0 mb-5 w-full z-100 text-center">
+    <main className="flex  flex-col items-center justify-center  mx-auto ">
+      <h1 className="text-4xl font-bold  mt-0 mb-5 w-full z-10 text-center">
         Anonymous Bulletin Board
       </h1>
-      <ThreadAndCommentTree
-        thread={transformedData}
-        // height={window.innerHeight}
-      />
+      <ThreadAndCommentTree thread={transformedData} />
     </main>
   );
 };
