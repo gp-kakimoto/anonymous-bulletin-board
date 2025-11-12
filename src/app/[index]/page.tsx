@@ -14,7 +14,7 @@ const Page = async ({ params }: { params: Params }) => {
   if (threadsData === null) {
     console.log("fetchThreads Error in page.tsx");
     return (
-      <main className="flex  flex-col items-centerjustify-center  mx-auto ">
+      <main className="flex  flex-col items-center justify-center  mx-auto ">
         <h1 className="text-4xl font-bold mt-0 mb-5 w-full z-100 text-center">
           Anonymous Bulletin Board
         </h1>
