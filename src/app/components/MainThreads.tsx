@@ -1,4 +1,4 @@
-//"use client";
+"use client";
 import React from "react";
 import { useState } from "react";
 import { THREADS_PER_PAGE, THREAD_CONTENT_LENGTH } from "@/lib/threads/types";
@@ -11,12 +11,12 @@ import { useRouter } from "next/navigation";
 import PageButton from "./PageButton";
 type Props = {
   threads: SupabaseThread[];
-  setThreadsData: React.Dispatch<React.SetStateAction<SupabaseThread[]>>;
   threadsIndex: number;
 };
 
 const MainThreads = (props: Props) => {
-  const { threads, setThreadsData, threadsIndex } = props;
+  const { threads, threadsIndex } = props;
+
   const [isSmall, setIsSmall] = useState(false);
   const [isActiveId, setIsActiveId] = useState<number | null>(null);
   const [addNewThreadIsSelected, setAddNewThreadIsSelected] = useState(false);
@@ -70,7 +70,6 @@ const MainThreads = (props: Props) => {
         {addNewThreadIsSelected && (
           <ThreadInputForm
             setAddNewThreadIsSelected={setAddNewThreadIsSelected}
-            setThreadsData={setThreadsData} // この行を追記
           />
         )}
         {!addNewThreadIsSelected && (
