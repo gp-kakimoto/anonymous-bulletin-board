@@ -4,7 +4,7 @@ import { SupabaseThread } from "@/lib/threads/types";
 import { getThreadsFromSupabase } from "../utils/supabaseServerFunctions";
 
 type Params = { index: string };
-const Page = async ({ params }: { params: Params }) => {
+const Page = async ({ params }: { params: Promise<Params> }) => {
   const { index } = await params;
   const threadsIndex = Number(index || 1); // Default to 1 if not provided
   const threadsData: SupabaseThread[] | null = await getThreadsFromSupabase(
