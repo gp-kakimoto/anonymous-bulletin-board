@@ -20,8 +20,8 @@ const getAndTransformComments = async (
 };
 
 type Params = { id: string };
-const Page = async ({ params }: { params: Params }) => {
-  const { id } = params;
+const Page = async ({ params }: { params: Promise<Params> }) => {
+  const { id } = await params;
   const threadId = parseInt(id, 10);
   const transformedData = await getAndTransformComments(threadId);
 
