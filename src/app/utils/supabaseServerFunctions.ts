@@ -53,4 +53,6 @@ const supabase = await createSupabaseServerClient();
   return data;
 };
 
+
+
 export {getThreadFromSupabase,getThreadsFromSupabase,getCommentsFromSupabase};

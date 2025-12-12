@@ -1,13 +1,14 @@
-// middleware.ts
+// middleware.ts --> proxy.ts にリネーム
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr"; // @supabase/auth-helpers-nextjs ではなく @supabase/ssr を使用
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+   console.log("Middleware executed for path:", request.nextUrl.pathname); // ログ出力を追加
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
-  // createServerClient for middleware
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -17,42 +18,39 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
+          // Cookieがセットされた場合、必ずresponseオブジェクトにも反映させます
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
+          // Cookieが削除された場合、必ずresponseオブジェクトにも反映させます
           response.cookies.set({ name, value: "", ...options });
         },
       },
     }
   );
   // セッション情報を取得
+  
   const {
     data: { user }, // session ではなく user を使用
   } = await supabase.auth.getUser(); // getSession ではなく getUser を使用
   // 管理者ページへのアクセスをチェック
-  if (request.nextUrl.pathname.startsWith("/admin")) {
+  if (request.nextUrl.pathname.startsWith("/admin/")) {
+    //ログアウトページへのアクセスは許可
+    if (request.nextUrl.pathname === "/admin/logout") {
+      return response; // ログアウトページはそのまま表示
+    }
     // ログインページへのアクセスは許可
-    if (request.nextUrl.pathname === "/admin/login") {
+    if (request.nextUrl.pathname === "/admin/login"
+      || request.nextUrl.pathname === "/admin/logout"
+    ) {
       // 既に認証済みであれば、管理者スレッド一覧へリダイレクト
-      if (user) {
+      if (user && request.nextUrl.pathname === "/admin/login") {
         // session ではなく user をチェック
         const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/admin/threads";
-        return NextResponse.redirect(redirectUrl);
+        redirectUrl.pathname = "/admin/1";
+        return NextResponse.redirect(redirectUrl, { headers: response.headers });
       }
-      return response; // ログインページはそのまま表示
+      return response; // ログインページ ログアウトページはそのまま表示
     }
     // ログインページ以外の管理者ページで未認証の場合、ログインページへリダイレクト
     if (!user) {
@@ -63,9 +61,21 @@ export async function middleware(request: NextRequest) {
     }
     // TODO: 必要であれば、ここでさらに、user.id などを使って、そのユーザーが「管理者」// ロールを持っているか確認するロジックを追加することも可能。
     // そのためには、Supabase のユーザーメタデータや、カスタムテーブルでロールを管理する必要がある。 [cite: 226]
+  }else if (request.nextUrl.pathname === "/admin") {
+    if(user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/admin/1";
+      return NextResponse.redirect(redirectUrl);
+    }else if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/admin/login";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
   return response;
 }
+  
+
 // ミドルウェアを適用するパスを定義 [cite: 227]
 export const config = {
   matcher: [
@@ -77,7 +87,8 @@ export const config = {
      * Feel free to modify this pattern to include specific paths
      * you want to protect or exclude.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    //"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/admin/:path*',
     // またはシンプルに '/admin/:path*'
   ],
 };

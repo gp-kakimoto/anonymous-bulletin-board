@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "../../utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import DOMPurify from "isomorphic-dompurify";
-
+import { Comment } from "@/lib/threads/types";
 // threadとcommentを書き込むためのファンクションたち
 // commentへの書き込み機能も実装してある。動く。
 // もう少しコードを圧縮できると思う 検討中
@@ -23,6 +23,10 @@ interface PostThreadPayload {
   content: string;
 }
 
+/*interface UpdateThreadVisibilityPayload {
+  threadId: number;
+  isHidden: boolean;
+}*/
 
 const validateFunctionForNameAndContent = (
   userName: FormDataEntryValue | null,
@@ -189,4 +193,109 @@ const postComment = async (formData: FormData,tID:number|null,pID:string|undefin
   }
 };
 
-export {  postThread,postComment };
+const updateThreadVisibility = async (threadId:number,isHidden:boolean) => {
+  //const { threadId, isHidden } = payload;
+  console.log(`Updating thread ID ${threadId} to is_hidden=${isHidden} next try`);  
+  try{  
+    const supabase = await createSupabaseServerClient();
+    const {data,error:userError} = await supabase.auth.getUser();
+    if (!data.user) {
+      console.log("No authenticated user found.");
+      throw new Error("認証が必要です。");
+    }
+
+    if(userError){
+      console.error("ユーザー取得エラー:", userError);
+      throw new Error("ユーザー情報の取得に失敗しました。");
+    }
+    console.log("Authenticated user ID:", data.user.id);
+    
+    const { error } = await supabase
+      .from("threads")
+      .update({ is_hidden: isHidden })
+      .eq("id", threadId);
+
+    console.log(`Updating thread ID ${threadId} to is_hidden=${isHidden}`);  
+    if (error) {
+      console.error("スレッド表示状態更新エラー:", error);
+      throw new Error("スレッドの表示状態の更新に失敗しました。");
+    }
+    revalidatePath(`/admin/1`);
+    
+
+    return { success: true };
+  } catch (e: unknown) {
+    let errorMessage = "不明なエラーが発生しました。";
+    if (e instanceof Error) {
+      errorMessage = e.message;
+    }
+    return { error: errorMessage }; // クライアントにエラーを返す
+  }
+}
+
+
+const updateCommentVisibility = async (commentId:string,isHidden:boolean,threadIsHidden:boolean,comment:Comment) => {
+  //const { threadId, isHidden } = payload;
+  let parentIsHidden = false;
+  console.log(`Updating comment ID ${commentId} to is_hidden=${isHidden} next try`);  
+  try{  
+    const supabase = await createSupabaseServerClient();
+    const {data,error:userError} = await supabase.auth.getUser();
+    if (!data.user) {
+      console.log("No authenticated user found.");
+      throw new Error("認証が必要です。");
+    }
+
+    if(userError){
+      console.error("ユーザー取得エラー:", userError);
+      throw new Error("ユーザー情報の取得に失敗しました。");
+    }
+    console.log("Authenticated user ID:", data.user.id);
+    
+    if(comment.parent_id !== null && comment.parent_id !== undefined){
+      //返信コメントの場合、親コメントが非表示なら非表示を維持する
+      //threadが非表示の場合も表示を維持する
+      /*if (thread.is_hidden === true) {
+        flagofIsHidden = true;
+      }*/
+    
+      const { data: parentComment, error: parentError } = await supabase
+        .from("comments")
+        .select("is_hidden")
+        .eq("id", comment.parent_id)
+        .single();
+        
+      if (parentError) {
+        console.error("親コメント取得エラー:", parentError);
+        throw new Error("親コメントの取得に失敗しました。");
+      }
+
+      parentIsHidden = parentComment.is_hidden;
+      console.log(`Parent comment ID ${comment.parent_id} is_hidden=${parentComment.is_hidden}`);  
+    }
+    const shouldHide = threadIsHidden || parentIsHidden ? true : isHidden;
+    const { error } = await supabase
+      .from("comments")
+      .update({ is_hidden: shouldHide })
+      .eq("id", commentId);
+    console.log(`Updating comment ID ${commentId} to is_hidden=${shouldHide}`);
+    if (error) {
+      console.error("コメント表示状態更新エラー:", error);
+      throw new Error("コメントの表示状態の更新に失敗しました。");
+      //revalidatePath(`/admin/1`);
+    }
+      
+
+    return { success: true };
+  
+  }catch (e: unknown) {
+    let errorMessage = "不明なエラーが発生しました。";
+    if (e instanceof Error) {
+      errorMessage = e.message;
+    }
+    return { error: errorMessage }; // クライアントにエラーを返す
+  }
+}
+
+export {  postThread,postComment,updateThreadVisibility,updateCommentVisibility };
+//export {  postThread,postComment };
