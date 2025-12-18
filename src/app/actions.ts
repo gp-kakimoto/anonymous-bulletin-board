@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "../../utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import DOMPurify from "isomorphic-dompurify";
-import { Comment } from "@/lib/threads/types";
+//import { Comment } from "@/lib/threads/types"; //コメントタイプのインポートは不要になった
 // threadとcommentを書き込むためのファンクションたち
 // commentへの書き込み機能も実装してある。動く。
 // もう少しコードを圧縮できると思う 検討中
@@ -194,7 +194,6 @@ const postComment = async (formData: FormData,tID:number|null,pID:string|undefin
 };
 
 const updateThreadVisibility = async (threadId:number,isHidden:boolean) => {
-  //const { threadId, isHidden } = payload;
   console.log(`Updating thread ID ${threadId} to is_hidden=${isHidden} next try`);  
   try{  
     const supabase = await createSupabaseServerClient();
@@ -233,12 +232,14 @@ const updateThreadVisibility = async (threadId:number,isHidden:boolean) => {
   }
 }
 
-
-const updateCommentVisibility = async (commentId:string,isHidden:boolean,threadIsHidden:boolean,comment:Comment) => {
-  //const { threadId, isHidden } = payload;
-  let parentIsHidden = false;
+const updateCommentVisibility = async (commentId:string,isHidden:boolean) => {
   console.log(`Updating comment ID ${commentId} to is_hidden=${isHidden} next try`);  
-  try{  
+  try{
+    
+    //コメントの非表示非表示の判定を別で計算により行い、threadか親コメントが非表示の場合
+    //非表示と表示するが、DBの書き換えは行わない。
+    //ここではコメントの取得は必要なくなり、単に、commentIdとisHiddenを受け取って処理するだけでよい
+
     const supabase = await createSupabaseServerClient();
     const {data,error:userError} = await supabase.auth.getUser();
     if (!data.user) {
@@ -252,33 +253,11 @@ const updateCommentVisibility = async (commentId:string,isHidden:boolean,threadI
     }
     console.log("Authenticated user ID:", data.user.id);
     
-    if(comment.parent_id !== null && comment.parent_id !== undefined){
-      //返信コメントの場合、親コメントが非表示なら非表示を維持する
-      //threadが非表示の場合も表示を維持する
-      /*if (thread.is_hidden === true) {
-        flagofIsHidden = true;
-      }*/
-    
-      const { data: parentComment, error: parentError } = await supabase
-        .from("comments")
-        .select("is_hidden")
-        .eq("id", comment.parent_id)
-        .single();
-        
-      if (parentError) {
-        console.error("親コメント取得エラー:", parentError);
-        throw new Error("親コメントの取得に失敗しました。");
-      }
-
-      parentIsHidden = parentComment.is_hidden;
-      console.log(`Parent comment ID ${comment.parent_id} is_hidden=${parentComment.is_hidden}`);  
-    }
-    const shouldHide = threadIsHidden || parentIsHidden ? true : isHidden;
     const { error } = await supabase
       .from("comments")
-      .update({ is_hidden: shouldHide })
+      .update({ is_hidden: isHidden })
       .eq("id", commentId);
-    console.log(`Updating comment ID ${commentId} to is_hidden=${shouldHide}`);
+    console.log(`Updating comment ID ${commentId} to is_hidden=${isHidden}`);
     if (error) {
       console.error("コメント表示状態更新エラー:", error);
       throw new Error("コメントの表示状態の更新に失敗しました。");
@@ -298,4 +277,3 @@ const updateCommentVisibility = async (commentId:string,isHidden:boolean,threadI
 }
 
 export {  postThread,postComment,updateThreadVisibility,updateCommentVisibility };
-//export {  postThread,postComment };

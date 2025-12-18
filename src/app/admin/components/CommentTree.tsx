@@ -29,23 +29,18 @@ const CommentTree = (props: Props) => {
   const handleClickIshidden = async (
     id: number | string, //threadId:number,or commentId:number
     isHidden: boolean,
-    replyComment: Comment
+    //replyComment: Comment
+    isHiddenThread: boolean,
+    isHiddenComment: boolean
   ) => {
     console.log("Hidden button clicked");
     try {
-      if (
-        await updateCommentVisibility(
-          String(id),
-          isHidden,
-          thread.is_hidden,
-          //comment!
-          replyComment
-        )
-      ) {
-        console.log("Comment visibility updated successfully");
-        //router.refresh();
-      } else {
-        console.error("Failed to update comment visibility");
+      if (!isHiddenThread && !isHiddenComment) {
+        if (await updateCommentVisibility(String(id), isHidden)) {
+          console.log("Comment visibility updated successfully");
+        } else {
+          console.error("Failed to update comment visibility");
+        }
       }
     } catch (error) {
       console.error("Error updating comment visibility:", error);
@@ -64,12 +59,7 @@ const CommentTree = (props: Props) => {
               <h4 className="text-xs font-semibold text-left text-blue-500">
                 {reply.user_name}
               </h4>
-              <div
-                className="ml-2 flex justify-between items-center"
-                /*onClick={() => {
-                  handleClick(reply.id);
-                }}*/
-              >
+              <div className="ml-2 flex justify-between items-center">
                 <p className="text-gray-600 text-sm">{reply.comment_text}</p>
                 <button
                   className="text-red-500 border-2 border-gray-300 bg-pink-200 z-max"
@@ -77,12 +67,16 @@ const CommentTree = (props: Props) => {
                     await handleClickIshidden(
                       reply.id,
                       !reply.is_hidden,
-                      reply
+                      //reply
+                      thread.is_hidden,
+                      comment.is_hidden
                     );
                     router.refresh();
                   }}
                 >
-                  {reply.is_hidden ? "Hidden" : "Visible"}
+                  {thread.is_hidden || comment.is_hidden || reply.is_hidden
+                    ? "Hidden"
+                    : "Visible"}
                 </button>
               </div>
 

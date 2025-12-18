@@ -1,8 +1,6 @@
 "use client";
 import { Thread, Comment } from "@/lib/threads/types";
 import NavigateRectangleSticky from "@/app/components/NavigateRectangleSticky";
-//import { useState } from "react";
-//import CommentInputForm from "./CommentInputForm";
 import CommentTree from "./CommentTree";
 import { useRouter } from "next/navigation";
 import { updateCommentVisibility, updateThreadVisibility } from "@/app/actions";
@@ -19,31 +17,6 @@ const ThreadAndCommentTree = (props: Props) => {
     router.back();
   };
 
-  const handleIshiddenAtReplies = async (
-    thread: Thread,
-    replies: Comment[]
-  ) => {
-    for (const reply of replies) {
-      const generateFlagofIsHidden =
-        !thread.is_hidden === true ? true : reply.is_hidden;
-      if (
-        await updateCommentVisibility(
-          reply.id,
-          generateFlagofIsHidden,
-          thread.is_hidden,
-          reply
-        )
-      ) {
-        console.log("Reply visibility updated successfully");
-      } else {
-        console.error("Failed to update reply visibility");
-      }
-      if (reply.replies.length > 0) {
-        await handleIshiddenAtReplies(thread, reply.replies || []);
-      }
-    }
-  };
-
   const handleClickIshidden = async (
     id: number | string, //threadId:number,or commentId:number
     isHidden: boolean,
@@ -56,45 +29,26 @@ const ThreadAndCommentTree = (props: Props) => {
         comment == undefined &&
         (await updateThreadVisibility(Number(id), isHidden))
       ) {
-        await handleIshiddenAtReplies(thread, thread?.comments || []);
         console.log("Thread visibility updated successfully");
-        //router.refresh();
       } else if (comment == undefined) {
         console.error("Failed to update thread visibility");
       }
 
-      if (
-        await updateCommentVisibility(
-          String(id),
-          isHidden,
-          thread.is_hidden,
-          comment!
-        )
-      ) {
-        /*       for (let i = 0; i < thread.comments.length; i++) {
-          if (thread.comments[i].id === String(id)) {
-            //const comment = thread.comments[i];
-            await handleIshiddenAtReplies(thread, comment!.replies || []);
-            break;
-          }
-        }*/
-        const targetComment = thread.comments.find((c) => c.id === String(id));
-        if (targetComment) {
-          await handleIshiddenAtReplies(thread, comment!.replies || []);
+      if (comment != undefined && thread.is_hidden === false) {
+        if (await updateCommentVisibility(String(id), isHidden)) {
+          console.log("Comment visibility updated successfully");
+        } else {
+          console.error("Failed to update comment visibility");
         }
-        console.log("Comment visibility updated successfully");
-        //router.refresh();
-      } else {
-        console.error("Failed to update comment visibility");
+
+        router.refresh();
       }
-      router.refresh();
     } catch (error) {
       console.error(
         "Error updating thread visibility: or updating comment visibility",
         error
       );
     }
-    // console.log(`Thread ID: ${id}, New is_hidden: ${isHidden}`);
   };
 
   return (
@@ -168,7 +122,9 @@ const ThreadAndCommentTree = (props: Props) => {
                             router.refresh();
                           }}
                         >
-                          {comment.is_hidden ? "Hidden" : "Visible"}
+                          {thread.is_hidden || comment.is_hidden
+                            ? "Hidden"
+                            : "Visible"}
                         </button>
                       </div>
                       {comment.replies && comment.replies.length > 0 && (
