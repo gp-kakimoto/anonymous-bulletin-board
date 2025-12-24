@@ -33,6 +33,10 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user }, // session ではなく user を使用
   } = await supabase.auth.getUser(); // getSession ではなく getUser を使用
+  // userが管理者であるかどうかをチェックするロジックを追加
+  const isAdmin = user && user.id === process.env.ADMIN_USER_ID;
+  console.log("isAdmin:", isAdmin); // ログ出力を追加
+
   // 管理者ページへのアクセスをチェック
   if (request.nextUrl.pathname.startsWith("/admin/")) {
     //ログアウトページへのアクセスは許可
@@ -44,7 +48,8 @@ export async function proxy(request: NextRequest) {
       || request.nextUrl.pathname === "/admin/logout"
     ) {
       // 既に認証済みであれば、管理者スレッド一覧へリダイレクト
-      if (user && request.nextUrl.pathname === "/admin/login") {
+      // isAdmin をチェックして認証済みかどうかを判断する
+      if (isAdmin && request.nextUrl.pathname === "/admin/login") {
         // session ではなく user をチェック
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = "/admin/1";
@@ -53,7 +58,8 @@ export async function proxy(request: NextRequest) {
       return response; // ログインページ ログアウトページはそのまま表示
     }
     // ログインページ以外の管理者ページで未認証の場合、ログインページへリダイレクト
-    if (!user) {
+    // isAdmin をチェックして認証済みかどうかを判断する
+    if (!isAdmin) {
       // session ではなく user をチェック
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/admin/login";
@@ -62,11 +68,11 @@ export async function proxy(request: NextRequest) {
     // TODO: 必要であれば、ここでさらに、user.id などを使って、そのユーザーが「管理者」// ロールを持っているか確認するロジックを追加することも可能。
     // そのためには、Supabase のユーザーメタデータや、カスタムテーブルでロールを管理する必要がある。 [cite: 226]
   }else if (request.nextUrl.pathname === "/admin") {
-    if(user) {
+    if( isAdmin) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/admin/1";
       return NextResponse.redirect(redirectUrl);
-    }else if (!user) {
+    }else if (!isAdmin) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/admin/login";
       return NextResponse.redirect(redirectUrl);

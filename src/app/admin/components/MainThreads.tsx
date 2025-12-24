@@ -4,9 +4,7 @@ import React from "react";
 import { useState } from "react";
 import { THREADS_PER_PAGE, THREAD_CONTENT_LENGTH } from "@/lib/threads/types";
 import { SupabaseThread } from "@/lib/threads/types";
-//import { mockCommentsData } from "./test/testData"; // Mock data for testing
 import NavigateRectangleSticky from "../../components/NavigateRectangleSticky";
-//import { ThreadInputForm } from "./ThreadInputForm";
 import { getThreadCount } from "../../utils/supabaseFunctions";
 import { useRouter } from "next/navigation";
 import PageButton from "../../components/PageButton";
@@ -19,10 +17,8 @@ type Props = {
 
 const MainThreads = (props: Props) => {
   const { threads, threadsIndex } = props;
-
   const [isSmall, setIsSmall] = useState(false);
   const [isActiveId, setIsActiveId] = useState<number | null>(null);
-  //const [addNewThreadIsSelected, setAddNewThreadIsSelected] = useState(false);
   const router = useRouter();
   const handleClick = async (
     event: React.MouseEvent<HTMLDivElement>,
@@ -31,6 +27,7 @@ const MainThreads = (props: Props) => {
   ) => {
     setIsSmall(!isSmall);
     setIsActiveId(id);
+    event.stopPropagation(); // イベントのバブリングを防止
     const threadId = event.currentTarget.dataset.id;
     console.log("Thread clicked:", threadId);
     router.push(`/admin/thread/${threadId}`);
@@ -55,13 +52,8 @@ const MainThreads = (props: Props) => {
     }
   };
 
-  const handleClickIshidden = async (
-    //e: React.MouseEvent<HTMLButtonElement>,
-    threadId: number,
-    isHidden: boolean
-  ) => {
+  const handleClickIshidden = async (threadId: number, isHidden: boolean) => {
     console.log("Hidden button clicked");
-    //e.stopPropagation(); // イベントのバブリングを防止
     try {
       if (await updateThreadVisibility(threadId, isHidden)) {
         console.log("Thread visibility updated successfully");
@@ -85,20 +77,14 @@ const MainThreads = (props: Props) => {
           bgcolor="bg-purple-400"
           width="w-full"
           onClick={() => {
-            //setAddNewThreadIsSelected(true);
             router.push(`/admin/logout`);
           }}
         />
       </div>
 
       <div className="w-6/10 flex flex-col items-center mx-0 px-0">
-        {/*addNewThreadIsSelected && (
-          <ThreadInputForm
-            setAddNewThreadIsSelected={setAddNewThreadIsSelected}
-          />
-        )*/}
         {
-          /*!addNewThreadIsSelected &&*/ <div className="w-full  flex flex-col items-center  mt-0 mx-0 pt-0 px-0">
+          <div className="w-full  flex flex-col items-center  mt-0 mx-0 pt-0 px-0">
             {threads.map((thread) => (
               //thread.is_hidden ? null : ( // Skip hidden threads
               <div
@@ -111,12 +97,14 @@ const MainThreads = (props: Props) => {
                   <h2 className="text-sm font-semibold text-left text-green-500">
                     {thread.user_name}
                   </h2>
-                  <div className=" flex justify-between items-center">
-                    <p
-                      className="text-gray-700 text-center"
-                      onClick={(e) => handleClick(e, thread, thread.id)}
-                      data-id={thread.id}
-                    >
+                  <div
+                    className=" flex justify-between items-center"
+                    onClick={(e) => {
+                      handleClick(e, thread, thread.id);
+                    }}
+                    data-id={thread.id}
+                  >
+                    <p className="text-gray-700 text-center">
                       {thread.content.length > THREAD_CONTENT_LENGTH
                         ? thread.content.substring(0, THREAD_CONTENT_LENGTH) +
                           "..."
@@ -124,7 +112,8 @@ const MainThreads = (props: Props) => {
                     </p>
                     <button
                       className="text-red-500 border-2 border-gray-300 bg-pink-200 z-max"
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation();
                         await handleClickIshidden(thread.id, !thread.is_hidden);
                         router.refresh();
                       }}
