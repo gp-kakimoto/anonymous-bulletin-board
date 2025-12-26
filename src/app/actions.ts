@@ -198,7 +198,8 @@ const updateThreadVisibility = async (threadId:number,isHidden:boolean) => {
   try{  
     const supabase = await createSupabaseServerClient();
     const {data,error:userError} = await supabase.auth.getUser();
-    if (!data.user) {
+    //認証済みのユーザがadminであることをチェックするロジックを追加する
+    if (!data.user|| data.user.id !== process.env.ADMIN_USER_ID) {
       console.log("No authenticated user found.");
       throw new Error("認証が必要です。");
     }
@@ -242,7 +243,8 @@ const updateCommentVisibility = async (commentId:string,isHidden:boolean) => {
 
     const supabase = await createSupabaseServerClient();
     const {data,error:userError} = await supabase.auth.getUser();
-    if (!data.user) {
+    //認証済みのユーザがadminであることをチェックするロジックを追加する
+    if (!data.user|| data.user.id !== process.env.ADMIN_USER_ID) {
       console.log("No authenticated user found.");
       throw new Error("認証が必要です。");
     }
