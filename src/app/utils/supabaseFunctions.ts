@@ -1,7 +1,8 @@
 'use client';
 
-import { createSupabaseBrowserClient } from '@/../../utils/supabase/client'; // 適切なパスに修正
+import { createSupabaseBrowserClient } from '../../../utils/supabase/client'; // 適切なパスに修正
 import { THREADS_PER_PAGE } from '@/lib/threads/types';
+//import { useRouter } from 'next/navigation';
 
 const getThreadCount = async (): Promise<number | null> => {
   const supabase = createSupabaseBrowserClient();
@@ -76,4 +77,5 @@ const supabase = createSupabaseBrowserClient();
 };
 
 
+  
 export { getThreadCount,getThreadsFromSupabase,getCommentsFromSupabase,getThreadFromSupabase};

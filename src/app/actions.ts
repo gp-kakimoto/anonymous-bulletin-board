@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "../../utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import DOMPurify from "isomorphic-dompurify";
-
+//import { Comment } from "@/lib/threads/types"; //コメントタイプのインポートは不要になった
 // threadとcommentを書き込むためのファンクションたち
 // commentへの書き込み機能も実装してある。動く。
 // もう少しコードを圧縮できると思う 検討中
@@ -23,6 +23,10 @@ interface PostThreadPayload {
   content: string;
 }
 
+/*interface UpdateThreadVisibilityPayload {
+  threadId: number;
+  isHidden: boolean;
+}*/
 
 const validateFunctionForNameAndContent = (
   userName: FormDataEntryValue | null,
@@ -189,4 +193,89 @@ const postComment = async (formData: FormData,tID:number|null,pID:string|undefin
   }
 };
 
-export {  postThread,postComment };
+const updateThreadVisibility = async (threadId:number,isHidden:boolean) => {
+  console.log(`Updating thread ID ${threadId} to is_hidden=${isHidden} next try`);  
+  try{  
+    const supabase = await createSupabaseServerClient();
+    const {data,error:userError} = await supabase.auth.getUser();
+    //認証済みのユーザがadminであることをチェックするロジックを追加する
+    if (!data.user|| data.user.id !== process.env.ADMIN_USER_ID) {
+      console.log("No authenticated user found.");
+      throw new Error("認証が必要です。");
+    }
+
+    if(userError){
+      console.error("ユーザー取得エラー:", userError);
+      throw new Error("ユーザー情報の取得に失敗しました。");
+    }
+    console.log("Authenticated user ID:", data.user.id);
+    
+    const { error } = await supabase
+      .from("threads")
+      .update({ is_hidden: isHidden })
+      .eq("id", threadId);
+
+    console.log(`Updating thread ID ${threadId} to is_hidden=${isHidden}`);  
+    if (error) {
+      console.error("スレッド表示状態更新エラー:", error);
+      throw new Error("スレッドの表示状態の更新に失敗しました。");
+    }
+    revalidatePath(`/admin/1`);
+    
+
+    return { success: true };
+  } catch (e: unknown) {
+    let errorMessage = "不明なエラーが発生しました。";
+    if (e instanceof Error) {
+      errorMessage = e.message;
+    }
+    return { error: errorMessage }; // クライアントにエラーを返す
+  }
+}
+
+const updateCommentVisibility = async (commentId:string,isHidden:boolean) => {
+  console.log(`Updating comment ID ${commentId} to is_hidden=${isHidden} next try`);  
+  try{
+    
+    //コメントの非表示非表示の判定を別で計算により行い、threadか親コメントが非表示の場合
+    //非表示と表示するが、DBの書き換えは行わない。
+    //ここではコメントの取得は必要なくなり、単に、commentIdとisHiddenを受け取って処理するだけでよい
+
+    const supabase = await createSupabaseServerClient();
+    const {data,error:userError} = await supabase.auth.getUser();
+    //認証済みのユーザがadminであることをチェックするロジックを追加する
+    if (!data.user|| data.user.id !== process.env.ADMIN_USER_ID) {
+      console.log("No authenticated user found.");
+      throw new Error("認証が必要です。");
+    }
+
+    if(userError){
+      console.error("ユーザー取得エラー:", userError);
+      throw new Error("ユーザー情報の取得に失敗しました。");
+    }
+    console.log("Authenticated user ID:", data.user.id);
+    
+    const { error } = await supabase
+      .from("comments")
+      .update({ is_hidden: isHidden })
+      .eq("id", commentId);
+    console.log(`Updating comment ID ${commentId} to is_hidden=${isHidden}`);
+    if (error) {
+      console.error("コメント表示状態更新エラー:", error);
+      throw new Error("コメントの表示状態の更新に失敗しました。");
+      //revalidatePath(`/admin/1`);
+    }
+      
+
+    return { success: true };
+  
+  }catch (e: unknown) {
+    let errorMessage = "不明なエラーが発生しました。";
+    if (e instanceof Error) {
+      errorMessage = e.message;
+    }
+    return { error: errorMessage }; // クライアントにエラーを返す
+  }
+}
+
+export {  postThread,postComment,updateThreadVisibility,updateCommentVisibility };
