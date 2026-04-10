@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr"; // @supabase/auth-helpers-nextjs ではなく @supabase/ssr を使用
 export async function proxy(request: NextRequest) {
    console.log("Middleware executed for path:", request.nextUrl.pathname); // ログ出力を追加
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -78,6 +78,20 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
   }
+
+   if (request.nextUrl.pathname.match(/^\/thread\/\d+$/)) { 
+    const referer = request.headers.get('referer')
+
+    // 正規表現などで [threadId] からの遷移かチェック
+    // 例: http://localhost:3000/123 などの形式
+    const allowedPattern = /^http:\/\/localhost:3000\/\d+$/;
+
+    if (!referer || !allowedPattern.test(referer)) {
+      // 直打ち、または別サイトからの場合はホームへリダイレクト
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
   return response;
 }
   
@@ -94,7 +108,7 @@ export const config = {
      * you want to protect or exclude.
      */
     //"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    '/admin/:path*',
+    '/admin/:path*','/thread/:path*', // 管理者ページとスレッドページにミドルウェアを適用
     // またはシンプルに '/admin/:path*'
   ],
 };
